@@ -1,0 +1,53 @@
+@media (max-width: 900px) {
+  .container-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.8rem;
+  }
+  #grid-1,
+  #grid-2,
+  #grid-3 {
+    gap: 1.8rem;
+  }
+
+  .header form {
+    display: none;
+  }
+
+  #add-photo,
+  #glass-button {
+    padding: 0.8rem;
+    border-radius: 50%;
+
+    span {
+      display: none;
+    }
+
+    svg {
+      display: block !important;
+      width: 20px;
+      height: 20px;
+      fill: #fff;
+    }
+  }
+
+  #glass-button {
+    display: block;
+    background: #292426;
+  }
+
+  .buttons-header {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .container-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #grid-2,
+  #grid-3 {
+    // padding-top: 1.8rem;
+  }
+}
