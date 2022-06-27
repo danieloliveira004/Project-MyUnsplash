@@ -18,30 +18,29 @@ $(document).ready(() => {
 
   // CANCEL
   $('.cancel').on('click', e => {
-    if($('.visible')[0])
+    if ($('.visible')[0])
       bodyOverflow(false);
     $('.visible').removeClass('visible');
   })
 
-// SUBMIT -> AUTHORIZE 
- $('#cadastro form').on('submit', e => {
-   e.preventDefault();
+  // SUBMIT -> AUTHORIZE 
+  $('#cadastro form').on('submit', e => {
+    e.preventDefault();
    
-   description = $('#description').val();
-   url = $('#url').val();
-   op = 1;
+    description = $('#description').val();
+    url = $('#url').val();
+    op = 1;
    
-   $('.visible').removeClass('visible');
-   $('#autenticar').addClass('visible');
- });
+    $('.visible').removeClass('visible');
+    $('#autenticar').addClass('visible');
+  });
 
   // AUTORIZAR
   $("#autenticar form").on('submit', e => {
     e.preventDefault();
     let password = $("#password").val();
     $.post('autenticar.php', `senha=${password}`, date => {
-      if (date == 'valido')
-      {
+      if (date == 'valido') {
         $('.error').removeClass('hidden');
 
         $('.cancel').trigger('click');
@@ -55,14 +54,15 @@ $(document).ready(() => {
             success: data => {
               if (data == 'error')
                 retorno(false, 400);
-              else
-              {  
+              else {
                 retorno(false, 200);
                 carregarImagens();
               }
-            }
+            },
+            error: error => retorno(false, 400)
           });
         else
+          // EXCLUIR
           $.ajax({
             type: 'post',
             url: 'deletar.php',
@@ -71,17 +71,16 @@ $(document).ready(() => {
             success: data => {
               if (data == 'error')
                 retorno(false, 400);
-              else 
-              {  
+              else {
                 retorno(false, 201);
                 $(`#${id_img}`).parent().remove();
               }
             },
-          });         
+            error: error => retorno(false, 400)
+          });
       }
       else {
-        if ($('.error').hasClass('hidden'))
-        {
+        if ($('.error').hasClass('hidden')) {
           $('.error').fadeToggle('2000');
           $('.error').fadeToggle('2000');
         }
@@ -94,41 +93,43 @@ $(document).ready(() => {
   // PESQUISA
   $('#search form').on('submit', e => {
     e.preventDefault();
-    pesquisa($('#search input').val());
+    $('.container-grid').load('buscar.php', { pesquisa: $('#search input').val() }, function (response, status, http) {
+      if (status == 'success') {
+        if (response == '') {
+          carregarImagens();
+          retorno(false, 202);
+        }
+        else
+          retorno(false);
+      }
+      if (status == 'error') 
+        retorno(false, 400);
+      
+    })
     
   });
 
   $('.header form').on('submit', e => {
     e.preventDefault();
-    pesquisa($('.header input').val());
-  })
-
-  carregarImagens();
-}); //FIM DO READY
-
-// PESQUISA
-function pesquisa(pesquisa) {
-  if (pesquisa)
-  $.ajax({
-    type: 'post',
-    url: 'buscar.php',
-    data: `pesquisa=${pesquisa}`,
-    beforeSend: retorno(true),
-    success: data => {
-      let postagens = JSON.parse(data);
-      if (postagens.length > 0) {
-        limpar_grids();
-        $('.visible').removeClass('visible');
-        
-        construirLayout(postagens);
-        retorno(false);
+    let html = $('.container-grid').html();
+    $('.container-grid').load('buscar.php', { pesquisa: $('.header input').val() }, function (response, status, http) {
+      if (status == 'success') {
+        if (response == '') {
+          carregarImagens();
+          retorno(false, 202);
+        }
+        else
+          retorno(false);
       }
-      else
-        retorno(false, 202);
-    }
+      if (status == 'error') {
+        retorno(false, 400);
+      }
+    })
   });
-}
 
+  // CARREGAR IMAGENS 
+  carregarImagens();
+});//FIM DO READY
 
 // DELETE
 function deletar(id) {
@@ -138,36 +139,16 @@ function deletar(id) {
   id_img = id;
 }
 
-// CONTAINER GALERIA
-function criarContainer(postagens, tip = '') {
-  let html = `
-    <div class="container-img ${tip}">
-      <img src="${postagens.image}" id="${postagens.id}">
-      <div class="container-description">
-        <button class="delete" onclick="deletar(${postagens.id})">delete</button>
-        <div class="p-description">
-          <p>${postagens.description}</p>
-        </div>
-      </div>
-    </div>`;
-
-  return html
-}
-
 // CARREGAR HTML DAS IMAGENS
 function carregarImagens() {
-  $.ajax({
-    type: 'get',
-    url: 'carregamento.php',
-    beforeSend: retorno(true),
-    success: data => {
-      if(data == 'erro')
-        retorno(false, 400)
-      else
-      {  
-        construirLayout(JSON.parse(data));
-        retorno(false);
-      }
+  retorno(true);
+  $(".container-grid").load('carregamento.php', function (response, status, http) {
+    if (status == 'success' && response != 'erro') {
+      retorno(false);
+    }
+    else {
+      $('.container-grid').html('');
+      retorno(false, 400);
     }
   });
 }
@@ -244,16 +225,4 @@ function bodyOverflow(bool) {
     if(!$('#retorno')[0])
       $('body').css('overflow', 'visible'); 
   }
-}
-
-// LAYOUT
-function construirLayout(postagens) {
-  limpar_grids();
-  postagens.forEach(element => {
-    $('<img>').attr({ src: element.image }).on('load', function () {
-      if (this.naturalHeight > 700)
-        var tip = 'r-2';
-      $(`.container-grid`).append(criarContainer(element, tip));
-    })
-  });
 }

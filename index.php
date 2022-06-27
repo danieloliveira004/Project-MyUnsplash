@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <link rel="icon" href="devchallenges.png" />
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5968/5968743.png" />
 
   <link rel="stylesheet" href="css/style.css">
 
